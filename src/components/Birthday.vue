@@ -34,7 +34,7 @@
           />
         </div>
 
-        <div v-if="currentStage === 'cake'" class="interaction-box">
+        <div v-show="currentStage === 'cake'" class="interaction-box">
           <div class="cake-emoji" @click="handleCakeClick">🎂</div>
           <div class="counter">快乐值：{{ cakeCount }} / 10</div>
           <div class="progress-bar">
@@ -80,10 +80,15 @@ import { Star } from "../fx/Star";
 import { Balloon } from "../fx/Balloon";
 import { Firework } from "../fx/Firework";
 
+import wyt from "@/assets/wyt.png";
+import bubu from "@/assets/bubu.png";
+import bgm from "@/assets/如烟.mp3";
+import happybirthday from "@/assets/happybirthday.webm";
+
 // --- 状态控制 ---
 const currentStage = ref("welcome"); // 语义化状态：'welcome'(欢迎) | 'cake'(点蛋糕) | 'photo'(看照片)
 const cakeCount = ref(0);
-const isMusicPaused = ref(false);
+const isMusicPaused = ref(true);
 
 const floatingMsgs = ref([]);
 const typedHtml = ref("");
@@ -112,7 +117,7 @@ const randomMsgs = [
 const stageConfigs = {
   welcome: {
     title: "✨ HAPPY BIRTHDAY",
-    image: "/wyt.png",
+    image: wyt,
     desc: "",
     btnText: "START →",
     action: () => handleStageTransition("cake"),
@@ -127,7 +132,7 @@ const stageConfigs = {
   },
   photo: {
     title: "🎉 生日快樂 平安健康",
-    image: "/bubu.png",
+    image: bubu,
     desc: "", // 由打字机接管渲染
     btnText: "点击领取终极祝福 ✨",
     action: () => openBlessingVideo(),
@@ -139,6 +144,10 @@ const currentConfig = computed(() => stageConfigs[currentStage.value]);
 
 // --- 业务流转逻辑 ---
 const handleStageTransition = (nextStage) => {
+  const audio = bgmRef.value;
+  audio.play();
+  isMusicPaused.value = false;
+
   currentStage.value = nextStage;
   if (nextStage === "photo") {
     startTyping();
@@ -198,7 +207,7 @@ const openBlessingVideo = () => {
     const videoElement = fullVideoRef.value;
     if (videoElement) {
       if (!videoElement.src) {
-        videoElement.src = "/happybirthday.webm";
+        videoElement.src = happybirthday;
       }
 
       videoElement.load(); // 强制加载（可选）
@@ -280,18 +289,40 @@ let envFireworkTimer = setInterval(() => {
   if (currentStage.value !== "cake") launchFirework();
 }, 4000);
 
+const emojis = ["🎂", "🎉", "✨", "💖", "🍰"];
+let i = 0;
+
+const canvas = document.createElement("canvas");
+canvas.width = 64;
+canvas.height = 64;
+const faviconCtx = canvas.getContext("2d");
+
+const updateFavicon = () => {
+  if (!faviconCtx) return;
+  faviconCtx.clearRect(0, 0, 64, 64);
+
+  faviconCtx.font = "48px serif";
+  faviconCtx.textAlign = "center";
+  faviconCtx.textBaseline = "middle";
+
+  faviconCtx.fillText(emojis[i % emojis.length], 32, 32);
+
+  const link =
+    document.querySelector("link[rel='icon']") ||
+    document.createElement("link");
+
+  link.type = "image/png";
+  link.rel = "icon";
+  link.href = canvas.toDataURL("image/png");
+
+  document.head.appendChild(link);
+
+  i++;
+};
+
 onMounted(() => {
   const audio = bgmRef.value;
-  audio.src = "/如烟.mp3";
-  audio
-    .play()
-    .then(() => {
-      isMusicPaused.value = false;
-    })
-    .catch(() => {
-      // 自动播放失败（正常）
-      isMusicPaused.value = true;
-    });
+  audio.src = bgm;
 
   ctx = mainCanvas.value.getContext("2d");
   const resize = () => {
@@ -299,6 +330,8 @@ onMounted(() => {
     mainCanvas.value.height = window.innerHeight;
   };
   window.addEventListener("resize", resize);
+  setInterval(updateFavicon, 800);
+  updateFavicon();
 
   resize();
   stars = Array.from(
@@ -475,6 +508,14 @@ const toggleMusic = () => {
   user-select: none;
   display: inline-block;
   animation: wobble 1.5s infinite ease-in-out;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.cake-emoji:focus {
+  outline: none;
+}
+.cake-emoji:active {
+  background: transparent;
 }
 .counter {
   font-size: 17px;
