@@ -9,7 +9,7 @@
     >
       🎵
     </div>
-    <audio ref="bgmRef" loop :src="birthdayBgm" autoplay></audio>
+    <audio ref="bgmRef" loop src="/五月天-如烟.mp3"></audio>
 
     <div
       v-for="msg in floatingMsgs"
@@ -62,7 +62,7 @@
     <div v-if="showFullVideo" class="full-video-overlay">
       <video
         ref="fullVideoRef"
-        :src="birthdayMov"
+        src="/happybirthday.mov"
         class="full-screen-media"
         playsinline
         @ended="handleVideoEnded"
@@ -79,11 +79,6 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { Star } from "../fx/Star";
 import { Balloon } from "../fx/Balloon";
 import { Firework } from "../fx/Firework";
-
-import birthdayBgm from "../assets/五月天-如烟.mp3";
-import birthdayCake from "../assets/wyt.png";
-import birthdayImg from "../assets/bubu.png";
-import birthdayMov from "../assets/happybirthday.mov";
 
 // --- 状态控制 ---
 const currentStage = ref("welcome"); // 语义化状态：'welcome'(欢迎) | 'cake'(点蛋糕) | 'photo'(看照片)
@@ -117,7 +112,7 @@ const randomMsgs = [
 const stageConfigs = {
   welcome: {
     title: "✨ HAPPY BIRTHDAY",
-    image: birthdayCake,
+    image: "/wyt.png",
     desc: "",
     btnText: "START →",
     action: () => handleStageTransition("cake"),
@@ -132,7 +127,7 @@ const stageConfigs = {
   },
   photo: {
     title: "🎉 生日快樂 平安健康",
-    image: birthdayImg,
+    image: "/bubu.png",
     desc: "", // 由打字机接管渲染
     btnText: "点击领取终极祝福 ✨",
     action: () => openBlessingVideo(),
@@ -273,6 +268,18 @@ let envFireworkTimer = setInterval(() => {
 }, 4000);
 
 onMounted(() => {
+  const audio = bgmRef.value;
+
+  audio
+    .play()
+    .then(() => {
+      isMusicPaused.value = false;
+    })
+    .catch(() => {
+      // 自动播放失败（正常）
+      isMusicPaused.value = true;
+    });
+
   ctx = mainCanvas.value.getContext("2d");
   const resize = () => {
     mainCanvas.value.width = window.innerWidth;
