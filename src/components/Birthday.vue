@@ -9,7 +9,7 @@
     >
       🎵
     </div>
-    <audio ref="bgmRef" loop src="/五月天-如烟.mp3"></audio>
+    <audio ref="bgmRef" loop src="/如烟.mp3"></audio>
 
     <div
       v-for="msg in floatingMsgs"
@@ -62,7 +62,7 @@
     <div v-if="showFullVideo" class="full-video-overlay">
       <video
         ref="fullVideoRef"
-        src="/happybirthday.mov"
+        src="/happybirthday.webm"
         class="full-screen-media"
         playsinline
         @ended="handleVideoEnded"
