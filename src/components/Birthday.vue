@@ -9,7 +9,7 @@
     >
       🎵
     </div>
-    <audio ref="bgmRef" loop src="/如烟.mp3"></audio>
+    <audio ref="bgmRef" loop></audio>
 
     <div
       v-for="msg in floatingMsgs"
@@ -27,6 +27,7 @@
         <div v-if="currentConfig.image" class="media-container">
           <img
             :src="currentConfig.image"
+            loading="lazy"
             alt="Memory"
             class="birthday-img"
             :class="{ 'welcome-img': currentStage === 'welcome' }"
@@ -62,7 +63,6 @@
     <div v-if="showFullVideo" class="full-video-overlay">
       <video
         ref="fullVideoRef"
-        src="/happybirthday.webm"
         class="full-screen-media"
         playsinline
         @ended="handleVideoEnded"
@@ -197,6 +197,12 @@ const openBlessingVideo = () => {
   setTimeout(() => {
     const videoElement = fullVideoRef.value;
     if (videoElement) {
+      if (!videoElement.src) {
+        videoElement.src = "/happybirthday.webm";
+      }
+
+      videoElement.load(); // 强制加载（可选）
+
       videoElement.muted = false; // 🔥 关键：大视频一定要有声音！
       videoElement.currentTime = 0; // 从头开始播放
 
@@ -214,6 +220,13 @@ const openBlessingVideo = () => {
 };
 
 const handleVideoEnded = () => {
+  const video = fullVideoRef.value;
+
+  if (video) {
+    video.pause();
+    video.removeAttribute("src"); // ⭐ 关键：释放资源
+    video.load(); // 清空 buffer
+  }
   showFullVideo.value = false; // 关闭全屏播放器
 
   if (bgmRef.value && !isMusicPaused.value) {
@@ -269,7 +282,7 @@ let envFireworkTimer = setInterval(() => {
 
 onMounted(() => {
   const audio = bgmRef.value;
-
+  audio.src = "/如烟.mp3";
   audio
     .play()
     .then(() => {
